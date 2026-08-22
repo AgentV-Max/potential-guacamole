@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { SURULERE_AREAS } from "@/lib/types";
+import { NIGERIAN_BANKS } from "@/lib/banks";
 
 export default function SellerSignupForm() {
   const [submitting, setSubmitting] = useState(false);
@@ -27,6 +28,9 @@ export default function SellerSignupForm() {
       price_25kg: form.get("price_25kg"),
       delivery: form.get("delivery") === "on",
       accessories: form.get("accessories") === "on",
+      bank_code: form.get("bank_code"),
+      bank_account_number: form.get("bank_account_number"),
+      bank_account_name: form.get("bank_account_name"),
     };
 
     try {
@@ -233,6 +237,61 @@ export default function SellerSignupForm() {
           I sell cylinders &amp; accessories
         </label>
       </div>
+
+      <fieldset>
+        <legend className="mb-1 text-sm font-medium">
+          Payout bank details (optional &mdash; add now or later)
+        </legend>
+        <p className="mb-2 text-xs text-neutral-500">
+          Orders are paid into escrow and released to this account once buyers
+          confirm delivery. You can start selling without it, but you&apos;ll
+          need it before payments can be released to you.
+        </p>
+        <div className="grid gap-4 sm:grid-cols-3">
+          <div>
+            <label htmlFor="bank_code" className="mb-1 block text-xs text-neutral-500">
+              Bank
+            </label>
+            <select
+              id="bank_code"
+              name="bank_code"
+              defaultValue=""
+              className="w-full rounded-md border border-black/10 bg-white px-3 py-2 text-sm dark:border-white/10 dark:bg-neutral-900"
+            >
+              <option value="">Select bank</option>
+              {NIGERIAN_BANKS.map((bank) => (
+                <option key={bank.code} value={bank.code}>
+                  {bank.name}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label htmlFor="bank_account_number" className="mb-1 block text-xs text-neutral-500">
+              Account number
+            </label>
+            <input
+              id="bank_account_number"
+              name="bank_account_number"
+              inputMode="numeric"
+              maxLength={10}
+              className="w-full rounded-md border border-black/10 bg-white px-3 py-2 text-sm dark:border-white/10 dark:bg-neutral-900"
+              placeholder="0123456789"
+            />
+          </div>
+          <div>
+            <label htmlFor="bank_account_name" className="mb-1 block text-xs text-neutral-500">
+              Account name
+            </label>
+            <input
+              id="bank_account_name"
+              name="bank_account_name"
+              className="w-full rounded-md border border-black/10 bg-white px-3 py-2 text-sm dark:border-white/10 dark:bg-neutral-900"
+              placeholder="As it appears on your bank account"
+            />
+          </div>
+        </div>
+      </fieldset>
 
       {error && (
         <p className="rounded-md bg-red-50 px-3 py-2 text-sm text-red-700 dark:bg-red-900/30 dark:text-red-300">

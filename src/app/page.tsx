@@ -46,7 +46,9 @@ export default async function HomePage({
         <p className="mt-3 max-w-2xl text-orange-50">
           GasLink connects households and businesses in Surulere, Lagos with
           verified local LPG sellers &mdash; compare prices, check delivery
-          options, and place your order in minutes.
+          options, and place your order in minutes. Pay through escrow: your
+          money is only released once you confirm your gas arrived at the
+          correct weight.
         </p>
         <div className="mt-6 flex flex-wrap gap-3">
           <Link
@@ -54,6 +56,12 @@ export default async function HomePage({
             className="rounded-lg bg-white px-5 py-2.5 font-semibold text-orange-700 shadow hover:bg-orange-50"
           >
             Browse sellers
+          </Link>
+          <Link
+            href="/calculator"
+            className="rounded-lg border border-white/70 px-5 py-2.5 font-semibold text-white hover:bg-white/10"
+          >
+            Estimate my gas usage
           </Link>
           <Link
             href="/sell"

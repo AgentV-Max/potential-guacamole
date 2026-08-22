@@ -36,6 +36,10 @@ function createConnection(): Database.Database {
       rating_count INTEGER NOT NULL DEFAULT 0,
       access_code TEXT NOT NULL UNIQUE,
       verified INTEGER NOT NULL DEFAULT 0,
+      bank_code TEXT,
+      bank_account_number TEXT,
+      bank_account_name TEXT,
+      paystack_recipient_code TEXT,
       created_at TEXT NOT NULL
     );
 
@@ -44,18 +48,33 @@ function createConnection(): Database.Database {
       seller_id TEXT NOT NULL REFERENCES sellers(id),
       buyer_name TEXT NOT NULL,
       buyer_phone TEXT NOT NULL,
+      buyer_email TEXT,
+      buyer_token TEXT NOT NULL,
       delivery_address TEXT NOT NULL,
       area TEXT NOT NULL,
       cylinder_size TEXT NOT NULL,
       order_type TEXT NOT NULL DEFAULT 'refill',
       quantity INTEGER NOT NULL DEFAULT 1,
+      unit_price INTEGER NOT NULL DEFAULT 0,
+      amount INTEGER NOT NULL DEFAULT 0,
+      commission_amount INTEGER NOT NULL DEFAULT 0,
+      payout_amount INTEGER NOT NULL DEFAULT 0,
       notes TEXT,
       status TEXT NOT NULL DEFAULT 'pending',
+      payment_status TEXT NOT NULL DEFAULT 'unpaid',
+      payment_provider TEXT,
+      payment_reference TEXT,
+      paid_at TEXT,
+      buyer_confirmed_at TEXT,
+      released_at TEXT,
+      payout_error TEXT,
+      dispute_reason TEXT,
       created_at TEXT NOT NULL
     );
 
     CREATE INDEX IF NOT EXISTS idx_orders_seller ON orders(seller_id);
     CREATE INDEX IF NOT EXISTS idx_sellers_area ON sellers(area);
+    CREATE INDEX IF NOT EXISTS idx_orders_payment_reference ON orders(payment_reference);
   `);
 
   seedIfEmpty(db);

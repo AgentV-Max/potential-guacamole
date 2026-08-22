@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
-import { Order } from "@/lib/types";
+import { SellerOrderView } from "@/lib/types";
+import { formatNaira } from "@/lib/format";
 
 const STATUS_STYLES: Record<string, string> = {
   pending: "bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300",
@@ -11,12 +12,28 @@ const STATUS_STYLES: Record<string, string> = {
   cancelled: "bg-neutral-200 text-neutral-600 dark:bg-white/10 dark:text-neutral-300",
 };
 
+const PAYMENT_STYLES: Record<string, string> = {
+  unpaid: "bg-neutral-200 text-neutral-600 dark:bg-white/10 dark:text-neutral-300",
+  paid_held: "bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300",
+  released: "bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300",
+  refunded: "bg-neutral-200 text-neutral-600 dark:bg-white/10 dark:text-neutral-300",
+  disputed: "bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300",
+};
+
+const PAYMENT_LABEL: Record<string, string> = {
+  unpaid: "Awaiting buyer payment",
+  paid_held: "Payment held in escrow",
+  released: "Paid out to you",
+  refunded: "Refunded to buyer",
+  disputed: "Disputed",
+};
+
 export default function SellerDashboard() {
   const searchParams = useSearchParams();
   const [code, setCode] = useState(searchParams.get("code") ?? "");
   const [inputCode, setInputCode] = useState(searchParams.get("code") ?? "");
   const [businessName, setBusinessName] = useState<string | null>(null);
-  const [orders, setOrders] = useState<Order[] | null>(null);
+  const [orders, setOrders] = useState<SellerOrderView[] | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -151,17 +168,46 @@ export default function SellerDashboard() {
                   </p>
                 )}
               </div>
-              <span
-                className={`shrink-0 rounded-full px-2.5 py-1 text-xs font-medium ${
-                  STATUS_STYLES[order.status] ?? STATUS_STYLES.pending
-                }`}
-              >
-                {order.status}
+              <div className="flex shrink-0 flex-col items-end gap-1">
+                <span
+                  className={`rounded-full px-2.5 py-1 text-xs font-medium ${
+                    STATUS_STYLES[order.status] ?? STATUS_STYLES.pending
+                  }`}
+                >
+                  {order.status}
+                </span>
+                <span
+                  className={`rounded-full px-2.5 py-1 text-xs font-medium ${
+                    PAYMENT_STYLES[order.payment_status] ?? PAYMENT_STYLES.unpaid
+                  }`}
+                >
+                  {PAYMENT_LABEL[order.payment_status] ?? order.payment_status}
+                </span>
+              </div>
+            </div>
+
+            <div className="mt-2 flex items-center justify-between rounded-lg bg-neutral-50 px-3 py-2 text-sm dark:bg-white/5">
+              <span className="text-neutral-500">Order total {formatNaira(order.amount)}</span>
+              <span className="font-semibold">
+                You receive {formatNaira(order.payout_amount)}
               </span>
             </div>
+            {order.payout_error && order.payment_status === "paid_held" && order.buyer_confirmed_at && (
+              <p className="mt-1 text-xs text-red-600">
+                Buyer confirmed receipt but payout couldn&apos;t be sent automatically
+                &mdash; we&apos;ll follow up to complete it.
+              </p>
+            )}
+
             <div className="mt-3 flex flex-wrap gap-2">
+              {order.payment_status === "unpaid" && (
+                <span className="text-xs text-neutral-500">
+                  Waiting for buyer payment before you can confirm or deliver this order.
+                </span>
+              )}
               {["pending", "confirmed", "delivered", "cancelled"]
                 .filter((s) => s !== order.status)
+                .filter((s) => s !== "delivered" || order.payment_status !== "unpaid")
                 .map((s) => (
                   <button
                     key={s}

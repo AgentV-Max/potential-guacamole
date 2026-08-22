@@ -58,15 +58,18 @@ export async function POST(request: NextRequest) {
     return v && !Number.isNaN(n) ? Math.round(n) : null;
   };
 
+  const nullableText = (v: unknown) =>
+    typeof v === "string" && v.trim() ? v.trim() : null;
+
   db.prepare(
     `INSERT INTO sellers (
       id, business_name, owner_name, phone, whatsapp, area, city, state, address,
       price_5kg, price_12_5kg, price_25kg, delivery, accessories, rating, rating_count,
-      access_code, verified, created_at
+      access_code, verified, bank_code, bank_account_number, bank_account_name, created_at
     ) VALUES (
       @id, @business_name, @owner_name, @phone, @whatsapp, @area, 'Surulere', 'Lagos', @address,
       @price_5kg, @price_12_5kg, @price_25kg, @delivery, @accessories, 4.5, 0,
-      @access_code, 0, @created_at
+      @access_code, 0, @bank_code, @bank_account_number, @bank_account_name, @created_at
     )`
   ).run({
     id,
@@ -82,6 +85,9 @@ export async function POST(request: NextRequest) {
     delivery: body.delivery ? 1 : 0,
     accessories: body.accessories ? 1 : 0,
     access_code: accessCode,
+    bank_code: nullableText(body.bank_code),
+    bank_account_number: nullableText(body.bank_account_number),
+    bank_account_name: nullableText(body.bank_account_name),
     created_at: now,
   });
 

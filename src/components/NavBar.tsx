@@ -2,6 +2,7 @@ import Link from "next/link";
 
 const links = [
   { href: "/", label: "Find Gas" },
+  { href: "/calculator", label: "Gas Calculator" },
   { href: "/sell", label: "Sell Gas" },
   { href: "/dashboard", label: "Seller Login" },
 ];
