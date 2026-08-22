@@ -1,9 +1,16 @@
 import Database from "better-sqlite3";
 import fs from "fs";
+import os from "os";
 import path from "path";
 import { randomUUID } from "crypto";
 
-const DATA_DIR = path.join(process.cwd(), "data");
+// Vercel's serverless functions only allow writes under /tmp; everywhere
+// else the filesystem is read-only. /tmp is also ephemeral (wiped between
+// cold starts and not shared across instances), so this is a stopgap for
+// clicking through the app on a live URL, not durable storage.
+const DATA_DIR = process.env.VERCEL
+  ? path.join(os.tmpdir(), "gaslink-data")
+  : path.join(process.cwd(), "data");
 const DB_PATH = path.join(DATA_DIR, "gaslink.db");
 
 declare global {
