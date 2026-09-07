@@ -1,26 +1,27 @@
-import { Calendar, Flame, Minus, Plus, RefreshCw, Zap } from 'lucide-react'
+import { Calendar, Flame, RefreshCw, SlidersHorizontal, Zap } from 'lucide-react'
 import Header from './Header.jsx'
 import CylinderGauge from './CylinderGauge.jsx'
-import CylinderSizeSlider from './CylinderSizeSlider.jsx'
+import { COOKING_FREQUENCIES } from '../data.js'
 import { daysRemaining, depletionDate, formatDate, gaugeStatus } from '../utils.js'
 
 export default function ConsumerDashboard({
   profile,
   cylinderSize,
   burners,
+  cookingFrequency,
   remainingPercent,
   lastTopUpAt,
   daysElapsed,
   now,
-  onChangeSize,
-  onChangeBurners,
+  onOpenWizard,
   onSimulateDay,
   onOpenCheckout,
   onLogout,
 }) {
   const status = gaugeStatus(remainingPercent)
-  const days = daysRemaining(lastTopUpAt, cylinderSize, burners, now)
-  const depletion = depletionDate(lastTopUpAt, cylinderSize, burners)
+  const days = daysRemaining(lastTopUpAt, cylinderSize, burners, cookingFrequency, now)
+  const depletion = depletionDate(lastTopUpAt, cylinderSize, burners, cookingFrequency)
+  const cookingLabel = COOKING_FREQUENCIES.find((f) => f.value === cookingFrequency)?.label
 
   return (
     <div className="min-h-screen bg-slate-950">
@@ -85,43 +86,37 @@ export default function ConsumerDashboard({
           {/* Controls */}
           <div className="lg:col-span-3 flex flex-col gap-6">
             <div className="rounded-3xl border border-slate-800 bg-slate-900/60 p-6">
-              <p className="text-xs font-semibold uppercase tracking-wider text-slate-500 mb-4">
-                Cylinder Size
-              </p>
-              <CylinderSizeSlider value={cylinderSize} onChange={onChangeSize} />
-            </div>
-
-            <div className="rounded-3xl border border-slate-800 bg-slate-900/60 p-6">
-              <p className="text-xs font-semibold uppercase tracking-wider text-slate-500 mb-4">
-                Active Daily Burners
-              </p>
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between mb-4">
+                <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">
+                  Tracker Configuration
+                </p>
                 <button
-                  onClick={() => onChangeBurners(Math.max(1, burners - 1))}
-                  className="h-11 w-11 flex items-center justify-center rounded-xl bg-slate-950/60 border border-slate-800 text-slate-300 hover:border-slate-600 transition-colors"
-                  aria-label="Decrease burners"
+                  onClick={onOpenWizard}
+                  className="flex items-center gap-1.5 text-xs font-semibold text-brand-orange hover:text-orange-400 transition-colors"
                 >
-                  <Minus size={18} />
-                </button>
-                <div className="flex items-center gap-2">
-                  {Array.from({ length: 4 }).map((_, i) => (
-                    <Flame
-                      key={i}
-                      size={26}
-                      className={i < burners ? 'text-brand-orange' : 'text-slate-800'}
-                      fill={i < burners ? 'currentColor' : 'none'}
-                    />
-                  ))}
-                  <span className="ml-2 text-xl font-bold text-white tabular-nums">{burners}</span>
-                </div>
-                <button
-                  onClick={() => onChangeBurners(Math.min(4, burners + 1))}
-                  className="h-11 w-11 flex items-center justify-center rounded-xl bg-slate-950/60 border border-slate-800 text-slate-300 hover:border-slate-600 transition-colors"
-                  aria-label="Increase burners"
-                >
-                  <Plus size={18} />
+                  <SlidersHorizontal size={13} />
+                  Recalibrate
                 </button>
               </div>
+
+              <div className="grid grid-cols-3 gap-3">
+                <ConfigTile label="Cylinder Size" value={`${cylinderSize}kg`} />
+                <ConfigTile
+                  label="Active Burners"
+                  value={
+                    <span className="flex items-center gap-1">
+                      <Flame size={14} className="text-brand-orange" fill="currentColor" />
+                      {burners}
+                    </span>
+                  }
+                />
+                <ConfigTile label="Cooking" value={cookingLabel} small />
+              </div>
+
+              <p className="text-xs text-slate-600 mt-4">
+                These three parameters set your daily burn rate. Recalibrate any time via the guided setup —
+                each step is walked through in sequence.
+              </p>
             </div>
 
             <div className="rounded-3xl border border-slate-800 bg-slate-900/60 p-6">
@@ -129,6 +124,7 @@ export default function ConsumerDashboard({
                 How the tracker works
               </p>
               <ul className="text-sm text-slate-400 space-y-2 leading-relaxed">
+                <li>• Burners, cooking frequency &amp; cylinder size — set in sequence — fix your daily burn rate</li>
                 <li>• A live daily countdown, anchored to your last top-up date, drives the gauge</li>
                 <li>• Turns <span className="text-brand-amber font-medium">amber</span> below 40% and <span className="text-red-400 font-medium">red</span> below 15%</li>
                 <li>• Crossing 15% automatically fires a reorder trigger to your notifications</li>
@@ -139,6 +135,15 @@ export default function ConsumerDashboard({
           </div>
         </div>
       </main>
+    </div>
+  )
+}
+
+function ConfigTile({ label, value, small }) {
+  return (
+    <div className="rounded-xl bg-slate-950/60 border border-slate-800 p-3 text-center">
+      <p className="text-xs text-slate-500 truncate">{label}</p>
+      <p className={`font-bold text-white mt-1 truncate ${small ? 'text-sm' : 'text-lg'}`}>{value}</p>
     </div>
   )
 }

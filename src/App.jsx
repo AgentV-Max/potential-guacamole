@@ -3,6 +3,7 @@ import Login from './components/Login.jsx'
 import ConsumerDashboard from './components/ConsumerDashboard.jsx'
 import SellerDashboard from './components/SellerDashboard.jsx'
 import CheckoutModal from './components/CheckoutModal.jsx'
+import TrackerSetupWizard from './components/TrackerSetupWizard.jsx'
 import ToastOverlay from './components/ToastOverlay.jsx'
 import {
   DEMO_CONSUMER,
@@ -23,6 +24,7 @@ const CLOCK_TICK_MS = 60 * 1000 // how often the live day-count re-checks itself
 const initialConsumerState = {
   cylinderSize: DEMO_CONSUMER.cylinderSize,
   burners: DEMO_CONSUMER.burners,
+  cookingFrequency: DEMO_CONSUMER.cookingFrequency,
   lastTopUpAt: DEMO_CONSUMER.lastTopUpAt,
 }
 
@@ -42,6 +44,7 @@ export default function App() {
   const [consumer, setConsumer] = useState(initialConsumerState)
   const [seller, setSeller] = useState(initialSellerState)
   const [now, setNow] = useState(() => new Date())
+  const [wizardOpen, setWizardOpen] = useState(false)
 
   const lowVolumeFired = useRef(false)
   const smartMatchTimer = useRef(null)
@@ -60,8 +63,15 @@ export default function App() {
   )
 
   const remainingPercent = useMemo(
-    () => remainingPercentFromTopUp(consumer.lastTopUpAt, consumer.cylinderSize, consumer.burners, now),
-    [consumer.lastTopUpAt, consumer.cylinderSize, consumer.burners, now],
+    () =>
+      remainingPercentFromTopUp(
+        consumer.lastTopUpAt,
+        consumer.cylinderSize,
+        consumer.burners,
+        consumer.cookingFrequency,
+        now,
+      ),
+    [consumer.lastTopUpAt, consumer.cylinderSize, consumer.burners, consumer.cookingFrequency, now],
   )
 
   const dismissToast = useCallback((id) => {
@@ -146,6 +156,26 @@ export default function App() {
     setNow(new Date())
   }
 
+  // Completing the guided setup wizard commits the new burners/cooking
+  // frequency/cylinder size together and restarts the countdown from today,
+  // so the daily tracker's next reorder trigger is calculated off the
+  // settings the user just walked through — not stale prior values.
+  function handleActivateTracker({ cylinderSize, burners, cookingFrequency }) {
+    setConsumer((prev) => ({
+      ...prev,
+      cylinderSize,
+      burners,
+      cookingFrequency,
+      lastTopUpAt: new Date(),
+    }))
+    setWizardOpen(false)
+    pushToast({
+      type: 'success',
+      title: 'Tracker Activated',
+      message: `Tracking ${cylinderSize}kg · ${burners} burner${burners === 1 ? '' : 's'} · ${cookingFrequency}x daily cooking. We'll trigger your next reorder alert automatically.`,
+    })
+  }
+
   function handleAuthorizePayment({ total }) {
     setConsumer((prev) => ({ ...prev, lastTopUpAt: new Date() }))
     setCheckoutOpen(false)
@@ -211,12 +241,12 @@ export default function App() {
           profile={DEMO_CONSUMER}
           cylinderSize={consumer.cylinderSize}
           burners={consumer.burners}
+          cookingFrequency={consumer.cookingFrequency}
           remainingPercent={remainingPercent}
           lastTopUpAt={consumer.lastTopUpAt}
           daysElapsed={daysElapsed}
           now={now}
-          onChangeSize={(size) => setConsumer((prev) => ({ ...prev, cylinderSize: size }))}
-          onChangeBurners={(burners) => setConsumer((prev) => ({ ...prev, burners }))}
+          onOpenWizard={() => setWizardOpen(true)}
           onSimulateDay={handleSimulateDay}
           onOpenCheckout={() => setCheckoutOpen(true)}
           onLogout={handleLogout}
@@ -244,6 +274,17 @@ export default function App() {
         cylinderSize={consumer.cylinderSize}
         discounted={discountActive}
         onAuthorize={handleAuthorizePayment}
+      />
+
+      <TrackerSetupWizard
+        open={wizardOpen}
+        initialValues={{
+          cylinderSize: consumer.cylinderSize,
+          burners: consumer.burners,
+          cookingFrequency: consumer.cookingFrequency,
+        }}
+        onCancel={() => setWizardOpen(false)}
+        onActivate={handleActivateTracker}
       />
 
       <ToastOverlay toasts={toasts} onDismiss={dismissToast} onAction={handleToastAction} />

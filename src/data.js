@@ -20,10 +20,22 @@ export const CYLINDER_SIZE_HINTS = {
   50: 'Commercial & heavy use',
 }
 
-export const DAILY_KG_PER_BURNER = 0.22 // approx. kg burned per active burner per day
+// Approx. kg burned per active burner per cooking session. Consumption
+// scales with both how many burners run AND how many times a day the
+// household cooks — two independent inputs the setup wizard collects.
+export const KG_PER_BURNER_PER_SESSION = 0.11
+
+// How many times a day the household typically cooks — collected as a
+// step in the guided tracker setup, alongside burner count and cylinder size.
+export const COOKING_FREQUENCIES = [
+  { value: 1, label: 'Once a day', hint: 'Light use — one meal session' },
+  { value: 2, label: 'Twice a day', hint: 'Typical — breakfast & dinner' },
+  { value: 3, label: 'Thrice a day', hint: 'Heavy use — three meal sessions' },
+]
 
 // Demo consumer's tank was last topped up ~24.15 days ago, which — at the
-// default 12.5kg/2-burner burn rate — lands the gauge at ~15% remaining.
+// default 12.5kg / 2-burner / twice-a-day burn rate — lands the gauge at
+// ~15% remaining.
 const DEMO_DAYS_SINCE_TOPUP = 24.15
 
 export const DEMO_CONSUMER = {
@@ -34,6 +46,7 @@ export const DEMO_CONSUMER = {
   avatarInitials: 'OA',
   cylinderSize: 12.5,
   burners: 2,
+  cookingFrequency: 2,
   lastTopUpAt: new Date(Date.now() - DEMO_DAYS_SINCE_TOPUP * 24 * 60 * 60 * 1000),
 }
 
