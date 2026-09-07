@@ -1,7 +1,7 @@
 import { Calendar, Flame, Minus, Plus, RefreshCw, Zap } from 'lucide-react'
 import Header from './Header.jsx'
 import CylinderGauge from './CylinderGauge.jsx'
-import { CYLINDER_SIZES } from '../data.js'
+import CylinderSizeSlider from './CylinderSizeSlider.jsx'
 import { daysRemaining, depletionDate, formatDate, gaugeStatus } from '../utils.js'
 
 export default function ConsumerDashboard({
@@ -88,21 +88,7 @@ export default function ConsumerDashboard({
               <p className="text-xs font-semibold uppercase tracking-wider text-slate-500 mb-4">
                 Cylinder Size
               </p>
-              <div className="grid grid-cols-4 gap-2">
-                {CYLINDER_SIZES.map((size) => (
-                  <button
-                    key={size}
-                    onClick={() => onChangeSize(size)}
-                    className={`rounded-xl py-3 text-sm font-bold transition-all border ${
-                      cylinderSize === size
-                        ? 'bg-brand-orange text-white border-brand-orange shadow-lg shadow-brand-orange/20'
-                        : 'bg-slate-950/40 text-slate-300 border-slate-800 hover:border-slate-600'
-                    }`}
-                  >
-                    {size}kg
-                  </button>
-                ))}
-              </div>
+              <CylinderSizeSlider value={cylinderSize} onChange={onChangeSize} />
             </div>
 
             <div className="rounded-3xl border border-slate-800 bg-slate-900/60 p-6">

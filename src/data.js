@@ -6,7 +6,19 @@ export const DELIVERY_FEE = 1500 // ₦ — flat Surulere localized delivery fee
 export const PLATFORM_FEE = 500 // ₦ — flat Gas-Link service fee
 export const PLATFORM_CUT = 0.05 // 5% of vendor payout goes to Gas-Link
 
-export const CYLINDER_SIZES = [5, 12.5, 25, 50]
+// Standard Nigerian LPG retail cylinder sizes, smallest to largest. 12.5kg
+// is the most common "family size" fill; 3kg/6kg serve singles and small
+// households, 25kg/50kg serve large households and light commercial use.
+export const CYLINDER_SIZES = [3, 5, 6, 12.5, 25, 50]
+
+export const CYLINDER_SIZE_HINTS = {
+  3: 'Singles & light cooking',
+  5: 'Small households',
+  6: 'Small households',
+  12.5: 'Most popular — family size',
+  25: 'Large households & light commercial',
+  50: 'Commercial & heavy use',
+}
 
 export const DAILY_KG_PER_BURNER = 0.22 // approx. kg burned per active burner per day
 
