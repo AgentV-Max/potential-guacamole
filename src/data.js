@@ -10,6 +10,10 @@ export const CYLINDER_SIZES = [5, 12.5, 25, 50]
 
 export const DAILY_KG_PER_BURNER = 0.22 // approx. kg burned per active burner per day
 
+// Demo consumer's tank was last topped up ~24.15 days ago, which — at the
+// default 12.5kg/2-burner burn rate — lands the gauge at ~15% remaining.
+const DEMO_DAYS_SINCE_TOPUP = 24.15
+
 export const DEMO_CONSUMER = {
   role: 'consumer',
   email: 'oluwaseun@surulere.com',
@@ -18,7 +22,7 @@ export const DEMO_CONSUMER = {
   avatarInitials: 'OA',
   cylinderSize: 12.5,
   burners: 2,
-  remainingPercent: 15,
+  lastTopUpAt: new Date(Date.now() - DEMO_DAYS_SINCE_TOPUP * 24 * 60 * 60 * 1000),
 }
 
 export const DEMO_SELLER = {

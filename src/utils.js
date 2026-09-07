@@ -16,23 +16,43 @@ export function formatNairaPrecise(amount) {
   }).format(amount)
 }
 
+const MS_PER_DAY = 24 * 60 * 60 * 1000
+
 export function dailyBurnPercent(cylinderSize, burners) {
   const dailyKg = DAILY_KG_PER_BURNER * burners
   return (dailyKg / cylinderSize) * 100
 }
 
-export function daysRemaining(remainingPercent, cylinderSize, burners) {
+// Total days a full cylinder lasts at the current size/burner burn rate.
+export function totalDaysToDepletion(cylinderSize, burners) {
   const burnRate = dailyBurnPercent(cylinderSize, burners)
   if (burnRate <= 0) return Infinity
-  return remainingPercent / burnRate
+  return 100 / burnRate
 }
 
-export function depletionDate(remainingPercent, cylinderSize, burners) {
-  const days = daysRemaining(remainingPercent, cylinderSize, burners)
-  if (!isFinite(days)) return null
-  const d = new Date()
-  d.setDate(d.getDate() + Math.round(days))
-  return d
+export function daysSinceTopUp(lastTopUpAt, now = new Date()) {
+  return Math.max(0, (now.getTime() - lastTopUpAt.getTime()) / MS_PER_DAY)
+}
+
+// The gauge is a pure function of "how long ago did we last top up" — this
+// is the single source of truth the countdown, the reorder trigger, and the
+// depletion date all read from, rather than an independently mutated field.
+export function remainingPercentFromTopUp(lastTopUpAt, cylinderSize, burners, now = new Date()) {
+  const elapsed = daysSinceTopUp(lastTopUpAt, now)
+  const burnRate = dailyBurnPercent(cylinderSize, burners)
+  return Math.max(0, Math.min(100, 100 - elapsed * burnRate))
+}
+
+export function daysRemaining(lastTopUpAt, cylinderSize, burners, now = new Date()) {
+  const total = totalDaysToDepletion(cylinderSize, burners)
+  if (!isFinite(total)) return Infinity
+  return Math.max(0, total - daysSinceTopUp(lastTopUpAt, now))
+}
+
+export function depletionDate(lastTopUpAt, cylinderSize, burners) {
+  const total = totalDaysToDepletion(cylinderSize, burners)
+  if (!isFinite(total)) return null
+  return new Date(lastTopUpAt.getTime() + total * MS_PER_DAY)
 }
 
 export function formatDate(date) {

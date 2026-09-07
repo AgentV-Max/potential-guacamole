@@ -9,6 +9,9 @@ export default function ConsumerDashboard({
   cylinderSize,
   burners,
   remainingPercent,
+  lastTopUpAt,
+  daysElapsed,
+  now,
   onChangeSize,
   onChangeBurners,
   onSimulateDay,
@@ -16,8 +19,8 @@ export default function ConsumerDashboard({
   onLogout,
 }) {
   const status = gaugeStatus(remainingPercent)
-  const days = daysRemaining(remainingPercent, cylinderSize, burners)
-  const depletion = depletionDate(remainingPercent, cylinderSize, burners)
+  const days = daysRemaining(lastTopUpAt, cylinderSize, burners, now)
+  const depletion = depletionDate(lastTopUpAt, cylinderSize, burners)
 
   return (
     <div className="min-h-screen bg-slate-950">
@@ -42,7 +45,12 @@ export default function ConsumerDashboard({
             </p>
             <CylinderGauge percent={remainingPercent} tone={status.tone} label={status.label} />
 
-            <div className="w-full grid grid-cols-2 gap-3 mt-6">
+            <p className="text-xs text-slate-500 mt-4 text-center">
+              Day <span className="font-semibold text-slate-300">{Math.floor(daysElapsed)}</span> since your last
+              top-up on {formatDate(lastTopUpAt)}
+            </p>
+
+            <div className="w-full grid grid-cols-2 gap-3 mt-4">
               <div className="rounded-xl bg-slate-950/60 border border-slate-800 p-3 text-center">
                 <p className="text-xs text-slate-500">Days Remaining</p>
                 <p className="text-lg font-bold text-white mt-0.5">
@@ -135,10 +143,11 @@ export default function ConsumerDashboard({
                 How the tracker works
               </p>
               <ul className="text-sm text-slate-400 space-y-2 leading-relaxed">
-                <li>• Gauge estimates remaining volume from cylinder size &amp; active burners</li>
+                <li>• A live daily countdown, anchored to your last top-up date, drives the gauge</li>
                 <li>• Turns <span className="text-brand-amber font-medium">amber</span> below 40% and <span className="text-red-400 font-medium">red</span> below 15%</li>
-                <li>• &ldquo;Simulate Cooking Day&rdquo; advances one day of usage instantly for demo purposes</li>
-                <li>• Reordering resets your tank to 100% and dispatches a licensed seller</li>
+                <li>• Crossing 15% automatically fires a reorder trigger to your notifications</li>
+                <li>• &ldquo;Simulate Cooking Day&rdquo; ages the countdown by a day instantly for demo purposes</li>
+                <li>• Reordering restarts the countdown from today and dispatches a licensed seller</li>
               </ul>
             </div>
           </div>
